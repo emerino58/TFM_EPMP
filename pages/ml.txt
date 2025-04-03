@@ -1,0 +1,133 @@
+## ✅ PASO 7: Aplicación Aprendizaje Automático
+
+import dash
+from dash import html, dcc, Input, Output
+import dash_bootstrap_components as dbc
+import pandas as pd
+import numpy as np
+import plotly.express as px
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, f1_score
+
+dash.register_page(__name__, path="/ml", name="Machine Learning")
+
+# Carga y preprocesamiento
+jugadores_df = pd.read_excel("data/Jugadores1A_2024.xlsx")
+jugadores_df.replace("-", np.nan, inplace=True)
+
+# Variables utilizadas para clasificación
+columnas_numericas = [
+    "Duelos ganados %",
+    "Duelos defensivos ganados %",
+    "Duelos aéreos ganados %",
+    "Precisión centros %",
+    "Regates realizados %",
+    "Duelos atacantes ganados %",
+    "Precisión pases %",
+    "Precisión pases hacia adelante %",
+    "Precisión pases hacia atrás %",
+    "Precisión pases largos %",
+    "Precisión pases en el último tercio %"
+]
+
+# Creamos columna de Potencial con clasificación aleatoria inicial
+np.random.seed(42)
+jugadores_df["Potencial"] = np.random.choice(["Alto", "Medio", "Bajo"], size=len(jugadores_df))
+
+# Entrenamiento inicial general del modelo (puede no usarse directamente pero lo dejamos por si acaso)
+modelo_general = RandomForestClassifier(random_state=42)
+modelo_general.fit(jugadores_df[columnas_numericas].fillna(0), jugadores_df["Potencial"])
+
+# Layout
+layout = dbc.Container([
+    html.H2("⚙️ Análisis Machine Learning del Potencial de Jugadores", className="my-3 text-center"),
+
+    # Sección 1: Entrenamiento por Posición
+    html.H4("✅ Entrenamiento por posición (¡para afinar el modelo por rol!)", className="mt-4"),
+    dcc.Dropdown(
+        id="posicion-dropdown",
+        options=[{"label": pos, "value": pos} for pos in sorted(jugadores_df["Posición principal"].dropna().unique())],
+        placeholder="Selecciona una posición...",
+        className="mb-3"
+    ),
+    dcc.Graph(id="grafico-importancia-variables"),
+    html.Div(id="tabla-metricas"),
+
+    html.Hr(),
+
+    # Sección 2: Mapa de calor del potencial por posición
+    html.H4("🔥 Mapa de calor del Potencial por Posición"),
+    dcc.Graph(
+        id="mapa-calor",
+        figure=px.imshow(
+            jugadores_df.groupby(["Posición principal", "Potencial"]).size().unstack(fill_value=0)[["Alto", "Medio", "Bajo"]],
+            text_auto=True,
+            color_continuous_scale="viridis_r",
+            aspect="auto",
+            labels=dict(x="Potencial", y="Posición principal", color="Cantidad"),
+            title="Mapa de calor: Jugadores por Posición y Potencial"
+        ).update_layout(template="plotly_dark", height=500)
+    )
+], fluid=True)
+
+# Callback: Entrenamiento del modelo por posición
+@dash.callback(
+    Output("grafico-importancia-variables", "figure"),
+    Output("tabla-metricas", "children"),
+    Input("posicion-dropdown", "value")
+)
+def entrenar_modelo(posicion):
+    if not posicion:
+        return dash.no_update, dash.no_update
+
+    df_pos = jugadores_df[jugadores_df["Posición principal"] == posicion]
+
+    # Validación de columnas
+    columnas_validas = [col for col in columnas_numericas if col in df_pos.columns]
+    if len(columnas_validas) < len(columnas_numericas):
+        return {}, html.Div("❌ No se encontraron todas las variables necesarias en el dataset.")
+
+    # Entrenamiento modelo
+    X = df_pos[columnas_validas].fillna(0)
+    y = df_pos["Potencial"]
+
+    if len(X) < 10 or y.nunique() < 2:
+        return {}, html.Div("⚠️ No hay suficientes datos para entrenar el modelo para esta posición.")
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    modelo = RandomForestClassifier(random_state=42)
+    modelo.fit(X_train, y_train)
+    y_pred = modelo.predict(X_test)
+
+    # Gráfico de importancia
+    importancias = pd.Series(modelo.feature_importances_, index=columnas_validas)
+    fig_importancia = px.bar(
+        importancias.sort_values(),
+        orientation="h",
+        labels={"value": "Importancia", "index": "Variable"},
+        title=f"🎯 Importancia de variables para la posición: {posicion}",
+        color=importancias.sort_values(),
+        color_continuous_scale="Blues"
+    )
+    fig_importancia.update_layout(template="plotly_dark", height=400)
+
+    # Métricas
+    acc = accuracy_score(y_test, y_pred)
+    prec = precision_score(y_test, y_pred, average="macro", zero_division=0)
+    rec = recall_score(y_test, y_pred, average="macro", zero_division=0)
+    f1 = f1_score(y_test, y_pred, average="macro", zero_division=0)
+
+    tabla = dbc.Table([
+        html.Thead(html.Tr([html.Th("Métrica"), html.Th("Valor")])),
+        html.Tbody([
+            html.Tr([html.Td("Accuracy"), html.Td(f"{acc:.2f}")]),
+            html.Tr([html.Td("Precision"), html.Td(f"{prec:.2f}")]),
+            html.Tr([html.Td("Recall"), html.Td(f"{rec:.2f}")]),
+            html.Tr([html.Td("F1-score"), html.Td(f"{f1:.2f}")])
+        ])
+    ], bordered=True, dark=True, hover=True, striped=True, className="mt-3")
+
+    return fig_importancia, tabla
+
