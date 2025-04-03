@@ -1,7 +1,7 @@
-## ✅ PASO 1: Aplicación Central
+# ✅ PASO 1: Aplicación Central
 
 import dash
-from dash import dcc, html, Input, Output, State, ctx
+from dash import dcc, html, Input, Output, State
 import dash_bootstrap_components as dbc
 
 # ✅ Crear app
@@ -107,6 +107,6 @@ def login(n_clicks, usuario, password):
     else:
         return dash.no_update, "⚠️ Usuario o contraseña incorrectos"
 
-# ✅ Run app
+# ✅ Ejecutar app
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False, host="0.0.0.0", port=8080)

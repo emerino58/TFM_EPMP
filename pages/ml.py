@@ -11,8 +11,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-import dash_table
-
+## import dash_table
+from dash import dash_table
 dash.register_page(__name__, path="/ml", name="Machine Learning")
 
 # 📥 Carga de datos
