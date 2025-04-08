@@ -63,10 +63,10 @@ def generar_heatmap():
 layout = html.Div([
     
 html.H2(
-    "Jugadores Campeonato Itau 2024",
+    "👕 Jugadores Campeonato Itau 2024",
     style={
         "textAlign": "center",
-        "color": "#00bfff",
+        "color": "#ffffff",
         "fontSize": "32px",
         "marginBottom": "40px",
         "fontWeight": "bold",
@@ -76,13 +76,13 @@ html.H2(
 
     # 🔥 1. Mapa de calor por posición
     html.Div([
-        html.H4("1. Distribución de Jugadores por Equipo y Posición", style=titulo_seccion),
+        html.H4("🏃‍♂️. Distribución de Jugadores por Equipo y Posición", style=titulo_seccion),
         dcc.Graph(id="heatmap-posicion", figure=generar_heatmap(), config={"displayModeBar": False}, style={"width": "75%", "height": "600px", "margin": "0 auto"})
     ], style=estilo_seccion),
 
     # 📊 2. Comparar métricas (Boxplot)
     html.Div([
-        html.H4("2. Comparar Métricas por Equipo", style=titulo_seccion),
+        html.H4("📊. Comparar Métricas por Equipo", style=titulo_seccion),
         dbc.Label("Selecciona una métrica:", style={"color": "white"}),
         dcc.Dropdown(
             id="metrica-boxplot",
@@ -90,12 +90,12 @@ html.H2(
             value="Edad",
             style={"border": "2px solid black", "borderRadius": "5px"}
         ),
-        dcc.Graph(id="grafico-boxplot", style={"width": "75%", "margin": "0 auto"})
+        dcc.Graph(id="grafico-boxplot", style={"width": "75%", "margin": "0 auto", "height": "600px"})
     ], style=estilo_seccion),
 
     # 📈 3. Barras por jugador
     html.Div([
-        html.H4("3. Métrica General por Equipo (Barras por Jugador)", style=titulo_seccion),
+        html.H4("📈. Métrica General por Equipo (Barras por Jugador)", style=titulo_seccion),
         dbc.Row([
             dbc.Col([
                 dbc.Label("Selecciona un Club:", style={"color": "white"}),
@@ -118,12 +118,12 @@ html.H2(
         ]),
         html.Br(),
         html.Div(id="logo-club-general", style={"textAlign": "center"}),
-        dcc.Graph(id="grafico-general", style={"width": "75%", "margin": "0 auto"})
+        dcc.Graph(id="grafico-general", style={"width": "75%", "margin": "0 auto", "height": "600px"})
     ], style=estilo_seccion),
 
     # 🧭 4. Radar del Jugador
     html.Div([
-        html.H4("4. Análisis Individual del Jugador (Radar de Barras)", style=titulo_seccion),
+        html.H4("🔍. Análisis Individual del Jugador (Radar de Barras)", style=titulo_seccion),
         dbc.Row([
             dbc.Col([
                 dbc.Label("Selecciona un Club:", style={"color": "white"}),
@@ -140,7 +140,7 @@ html.H2(
             ], md=6),
         ]),
         html.Br(),
-        dcc.Graph(id="grafico-radar", config={"displayModeBar": False}, style={"width": "75%", "margin": "0 auto"})
+        dcc.Graph(id="grafico-radar", config={"displayModeBar": False}, style={"width": "75%", "margin": "0 auto", "height": "600px"})
     ], style=estilo_seccion),
 
     html.Div([
@@ -165,7 +165,7 @@ html.H2(
     Input("metrica-boxplot", "value")
 )
 def actualizar_boxplot(metrica):
-    df_filtrado = jugadores_df[jugadores_df[metrica] > 0]
+    df_filtrado = jugadores_df[jugadores_df[metrica].notna()]
     fig = px.box(df_filtrado, x="Club", y=metrica, color="Club")
     fig.update_layout(
         paper_bgcolor="#121212",

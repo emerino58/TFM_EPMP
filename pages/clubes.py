@@ -28,7 +28,7 @@ layout = dbc.Container([
     html.H2("🏆 Clubes Campeonato ITAU 2024", className="text-white", style={"textAlign": "center", "marginBottom": "30px"}),
     html.H4("📊 Tabla de Posiciones", style={"textAlign": "center", "marginTop": "20px", "color": "white"}),
 
-    dbc.Table.from_dataframe(tabla_df, striped=True, bordered=True, hover=True, responsive=True, className="table-dark"),
+    html.Div(dbc.Table.from_dataframe(tabla_df, striped=True, bordered=True, hover=True, responsive=True, className="table-dark"), style={"width": "75%", "margin": "0 auto"}),
 
     html.Hr(),
 
@@ -55,7 +55,7 @@ layout = dbc.Container([
         ], md=6)
     ], className="mb-4"),
 
-    dcc.Graph(id="grafico-evolucion"),
+    dcc.Graph(id="grafico-evolucion", style={"width": "75%", "margin": "0 auto", "height": "600px"}),
 
     html.Hr(),
 
@@ -70,7 +70,7 @@ layout = dbc.Container([
                 value=equipos_df["Clave"].unique()[0]
             ),
             html.Img(id="logo-rendimiento", style={"width": "80px", "margin": "auto", "display": "block", "marginTop": "10px"}),
-            dcc.Graph(id="grafico-rendimiento")
+            dcc.Graph(id="grafico-rendimiento", style={"width": "75%", "margin": "0 auto", "height": "600px"})
         ])
         ]),
 

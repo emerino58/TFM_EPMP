@@ -75,7 +75,7 @@ html.H2(
     "📈 Equipos Campeonato Itau 2024 - Módulo Machine Learning",
     style={
         "textAlign": "center",
-        "color": "#00bfff",
+        "color": "#ffffff",
         "fontSize": "32px",
         "marginBottom": "30px",
         "fontWeight": "bold",
@@ -279,15 +279,6 @@ def entrenar_modelo(posicion, modelo_tipo):
 def exportar_heatmap(n_clicks):
     fig = crear_heatmap()
     return dcc.send_file(fig.write_image("heatmap_ml.png"))
-
-
-
-
-
-
-
-
-
 
 
 html.Div([

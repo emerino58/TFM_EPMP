@@ -1,20 +1,20 @@
-# ✅ PASO 1: Aplicación Central
+# app.py
 
 import dash
 from dash import dcc, html, Input, Output, State
 import dash_bootstrap_components as dbc
 
-# ✅ Crear app
+# Crear app con soporte para múltiples páginas
 app = dash.Dash(
     __name__,
-    use_pages=True,
+    use_pages=True,  # Permite usar las páginas dinámicamente desde /pages
     suppress_callback_exceptions=True,
     external_stylesheets=[dbc.themes.SLATE],
     title="TFM Dashboard"
 )
 server = app.server
 
-# ✅ Usuarios válidos
+# Usuarios válidos
 usuarios_validos = {
     "admin": "123456",
     "usuario": "111111",
@@ -22,12 +22,13 @@ usuarios_validos = {
     "invitado": "666666"
 }
 
-# ✅ Menú lateral con logo
+# Menú lateral
 sidebar = html.Div([
     html.Img(src="/assets/logo_menu.png", style={"width": "100%", "margin-bottom": "2rem"}),
     dbc.Nav([
         dbc.NavLink("Equipos", href="/clubes", active="exact"),
         dbc.NavLink("Jugadores", href="/jugadores", active="exact"),
+        dbc.NavLink("Promesas Sub-23", href="/promesas", active="exact"),
         dbc.NavLink("Machine Learning", href="/ml", active="exact"),
         dbc.NavLink("Salir", href="/", active="exact"),
     ], vertical=True, pills=True),
@@ -42,7 +43,7 @@ sidebar = html.Div([
     "color": "white"
 })
 
-# ✅ Layout login con fondo e inputs centrados
+# Layout para login
 login_layout = html.Div([
     html.Div([
         html.H2("Inicio de Sesión", style={"color": "white", "margin-bottom": "20px"}),
@@ -67,19 +68,19 @@ login_layout = html.Div([
     "background-position": "center"
 })
 
-# ✅ Layout principal (después del login)
+# Layout principal con menú y contenedor de páginas
 main_layout = html.Div([
     sidebar,
     html.Div(dash.page_container, style={"margin-left": "18rem", "padding": "2rem"})
 ])
 
-# ✅ Layout general con controlador de rutas
+# Layout general controlado por login
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     html.Div(id="page-content")
 ])
 
-# ✅ Callback para cambiar entre login y app principal
+# Mostrar login o dashboard según URL
 @app.callback(
     Output("page-content", "children"),
     Input("url", "pathname")
@@ -90,7 +91,7 @@ def render_page(pathname):
     else:
         return main_layout
 
-# ✅ Callback de login y redirección
+# Validación de usuario
 @app.callback(
     Output("url", "pathname"),
     Output("mensaje-login", "children"),
@@ -107,6 +108,6 @@ def login(n_clicks, usuario, password):
     else:
         return dash.no_update, "⚠️ Usuario o contraseña incorrectos"
 
-# ✅ Ejecutar app
+# Ejecutar app
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=8080)
